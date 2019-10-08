@@ -21,8 +21,8 @@ shinyUI(fluidPage(
 
         mainPanel(
             tabsetPanel(type = "tabs",
-                        tabPanel("Table", plotOutput("HVM_Table")),
-                        tabPanel("Visualize the Data", tableOutput("HVM_Plot")))
+                        tabPanel("Table", tableOutput("HVM_Table")),
+                        tabPanel("Visualize the Data", plotOutput("HVM_Plot")))
         )
     )
 ))
