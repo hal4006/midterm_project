@@ -3,9 +3,6 @@ library(readr)
 library(tidyverse)
 library(ggplot2)
 library(plotly)
-library(scales)
-
-##Enter your carcass_calculator_data.csv path here:
 
 #HVM <- read_csv("C:/Users/lhj98/Downloads/carcass_calculator_data.csv")
 
@@ -37,50 +34,16 @@ shinyServer(function(input, output) {
                    ch4e = ch4.emission * number.cows,
                    no2e = no2.emission * number.cows)
     })
-
+    
 
     output$HVM_Table <- renderTable({
          Carcass()
     })
-
-    output$HVM_Plot <- renderPlotly({
-
-        bar <-  Carcass() %>%
-            ggplot(aes(x = cut, y = number.cows, fill = cut)) +
-            theme(axis.text=element_text(size=12),
-                        axis.title=element_text(size=12),
-                        plot.title=element_text(size = 12),
-                  panel.background = element_rect(fill = 'ghostwhite',
-                                                  color = 'ghostwhite'),
-                  panel.grid.major = element_blank(),
-                  panel.grid.minor = element_blank()) +
-            scale_y_continuous(breaks = pretty_breaks()) +
-            ylab('Number of Cows') +
-            xlab('Cuts of Cow') +
-            ggtitle('How Many Cows Are You Killing?') +
+    
+    output$HVM_Plot <- renderPlot({
+        Carcass() %>%
+        ggplot(aes(x = cut, y = number.cows)) +
             geom_bar(stat = "identity")
-
-        ggplotly(bar)
-    })
-
-    output$HVM_Water <- renderPlotly({
-
-        barwater <- Carcass() %>%
-            ggplot(aes(x = cut, y = water.use, fill = cut)) +
-            theme(axis.text=element_text(size=12),
-                  axis.title=element_text(size=12),
-                  plot.title=element_text(size = 12),
-                  panel.background = element_rect(fill = 'ghostwhite',
-                                                  color = 'ghostwhite'),
-                  panel.grid.major = element_blank(),
-                  panel.grid.minor = element_blank()) +
-            scale_y_continuous(breaks = pretty_breaks()) +
-            ylab('Water Use') +
-            xlab('Cuts of Cow') +
-            ggtitle('Water Usage by Cut') +
-            geom_bar(stat = "identity")
-
-        ggplotly(barwater)
     })
 
 })

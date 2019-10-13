@@ -12,7 +12,7 @@ shinyUI(fluidPage(
                          label = "Pounds of Meat:",
                          value = 100,
                          min = 0,
-                         max = 10000),
+                         max = 100000000),
             checkboxGroupInput(inputId = "cut",
                                label = "Cuts of Meat",
                                cuts,
@@ -22,7 +22,7 @@ shinyUI(fluidPage(
         mainPanel(
             tabsetPanel(type = "tabs",
                         tabPanel("Table", tableOutput("HVM_Table")),
-                        tabPanel("Visualize the Data", plotlyOutput("HVM_Plot"), plotlyOutput("HVM_Water")))
+                        tabPanel("Visualize the Data", plotOutput("HVM_Plot")))
         )
     )
 ))
