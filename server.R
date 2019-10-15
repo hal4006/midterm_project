@@ -41,26 +41,20 @@ environment_impact <- function(df, var) {
 ## Wateruse
 ### Estimates vary, but each person uses about 80-100 gallons of water per day.
 ### The average number of family members in the US is 3.14 in 2018.
-### The population of NYC in 2017 is 8.623 million.
 #-- The water use volumn for an average family in a whole year is 114,610 gallons.
-#-- The water use volumn for the whole NYC in a day is 862.3 million gallons.
-water.inter <- 0.11461
+water.i <- 0.11 #(million gallons)
 
 ## Landuse
-### The area of central park is 1.317 mi2, NYC is 468 mi2.
+### The area of central park is 1.317 mi2.
 ### 1 mi2 equals to 640 acres.
-#-- The area of central park is 842.88 acres, NYC is 299520.
+#-- The area of central park is 842.88 acres.
+land.i <- 842.88 #(acres)
 
 ## Gasemission
-### A typical passenger vehicle emits about 4.6 metric tons of carbon dioxide per year.
-### Average vehicle age in the U.S. is projected to increase to 11.8 years by 2019.
 ### The average gasoline vehicle on the road today has a fuel economy of about 22.0 miles per gallon.
 ### Every gallon of gasoline burned creates about 8,887 grams of CO2.
-### There are 6,074 miles of road in NYC.
-#-- A typical passenger vehicle emits about 10.14 thousand pounds of carbon dioxide per year.
-#-- Emits about 119.652 thousand pounds of CO2 in the years of use.
-#-- The estimated CO2 emission for a typical vehicle to cover the roads of NYC is 5.409 thousand pounds.
-
+#-- A typical vehicle emits 0.89 Klbs CO2 per thousand miles.
+gase.i <- 0.89 #(Klbs/Kmi)
 
 # Set a function to calculate the heads according to inputs
 heads_calculator <- function(vec1, vec2) {
@@ -130,7 +124,8 @@ shinyServer(function(input, output, clientData, session){
     
     
     output$HVM_table <- renderDataTable({
-        datatable(HVM(), options = list(pageLength = 10, lengthMenu = c(10, 30, 60)))
+        datatable(HVM(), options = list(pageLength = 10, lengthMenu = c(10, 30, 60)),
+                  colnames = c('Cut', 'Weight per Cow (lbs)', 'Number of Cows', 'Water Use (milgal)', 'Land Use (acres)', 'CO2 (Klbs)', 'CH4 (Klbs)', 'NO2 (Klbs)'))
     })
     
     observeEvent(input$return0_A, {
@@ -192,7 +187,7 @@ shinyServer(function(input, output, clientData, session){
         SetB <- heads_calculator(Set_cut, SetB_qty)
         
         Set_all <- as.data.frame(cbind(Set = c(rep("Set with same quantity", len), rep("Set A", len), rep("Set B", len)),
-                            rbind(Set0, SetA, SetB)))
+                                       rbind(Set0, SetA, SetB)))
         environment_impact(Set_all, Set_all[,5])
     })
     NCuts <- reactive({length(input$cuts)})
@@ -269,15 +264,15 @@ shinyServer(function(input, output, clientData, session){
     
     output$cp0_table <- renderDataTable({
         datatable(CP_0()[-2], options = list(paging = F, searching = F),
-                  colnames = c('Cut', 'Quantity (lbs)', 'Number of Cows', 'Water Use (mil gal)', 'Land Use (acres)', 'CO2 (k lbs)', 'CH4 (k lbs)', 'NO2 (k lbs)'))
+                  colnames = c('Cut', 'Quantity (lbs)', 'Number of Cows', 'Water Use (milgal)', 'Land Use (acres)', 'CO2 (Klbs)', 'CH4 (Klbs)', 'NO2 (Klbs)'))
     })
     output$cpA_table <- renderDataTable({
         datatable(CP_A()[-2], options = list(paging = F, searching = F),
-                  colnames = c('Cut', 'Quantity (lbs)', 'Number of Cows', 'Water Use (mil gal)', 'Land Use (acres)', 'CO2 (k lbs)', 'CH4 (k lbs)', 'NO2 (k lbs)'))
+                  colnames = c('Cut', 'Quantity (lbs)', 'Number of Cows', 'Water Use (milgal)', 'Land Use (acres)', 'CO2 (Klbs)', 'CH4 (Klbs)', 'NO2 (Klbs)'))
     })
     output$cpB_table <- renderDataTable({
         datatable(CP_B()[-2], options = list(paging = F, searching = F),
-                  colnames = c('Cut', 'Quantity (lbs)', 'Number of Cows', 'Water Use (mil gal)', 'Land Use (acres)', 'CO2 (k lbs)', 'CH4 (k lbs)', 'NO2 (k lbs)'))
+                  colnames = c('Cut', 'Quantity (lbs)', 'Number of Cows', 'Water Use (milgal)', 'Land Use (acres)', 'CO2 (Klbs)', 'CH4 (Klbs)', 'NO2 (Klbs)'))
     })
     
     CP_summary <- reactive({
@@ -285,11 +280,11 @@ shinyServer(function(input, output, clientData, session){
         Set0_qty <- rep(input$pounds, length(Set_cut))
         Set0 <- heads_calculator(Set_cut, Set0_qty)
         summary_0 <- c(sum(Set0[,3]), sum(Set0[,4]))
-
+        
         SetA_qty <- c(input$qty_A1,input$qty_A2,input$qty_A3,input$qty_A4,input$qty_A5,input$qty_A6)
         SetA <- heads_calculator(Set_cut, SetA_qty)
         summary_A <- c(sum(SetA[,3]), sum(SetA[,4]))
-
+        
         SetB_qty <- c(input$qty_B1,input$qty_B2,input$qty_B3,input$qty_B4,input$qty_B5,input$qty_B6)
         SetB <- heads_calculator(Set_cut, SetB_qty)
         summary_B <- c(sum(SetB[,3]), sum(SetB[,4]))
@@ -300,12 +295,70 @@ shinyServer(function(input, output, clientData, session){
     
     output$cp_summary <- renderDataTable({
         datatable(CP_summary(),
-                  colnames = c('Total Quantity (lbs)', 'Total Number of Cows', 'Water Use (mil gal)', 'Land Use (acres)', 'CO2 (k lbs)', 'CH4 (k lbs)', 'NO2 (k lbs)'),
+                  colnames = c('Total Quantity (lbs)', 'Total Number of Cows', 'Water Use (milgal)', 'Land Use (acres)', 'CO2 (Klbs)', 'CH4 (Klbs)', 'NO2 (Klbs)'),
                   rownames = c("Set with same quantity", "Set A", "Set B"),
                   options = list(paging = F, searching = F))
     })
+    
+    output$ei_summary <- renderDataTable({
+        ei_summary <- data.frame(
+            EI = c("Water Use","Land Use","Gas Emission"),
+            Cow.rate = c(6.36, 77, 102.96),
+            Refer = c("Annual Water Use of a US Family of 3",
+                      "Area of Central Park",
+                      "CO2 Emisson per Thousand Miles for a Typical Vehicle"),
+            Value = c(0.11, 842.88, 0.89),
+            Unit = c("Million Gallon", "Acres", "Thousand Lbs"),
+            Interpretation = c("1 Cow for 58 Famlies",
+                               "11 Cows for Central Park",
+                               "1 Cow for 115.7 Thousand Miles Ride")
+        )
+        datatable(ei_summary, options = list(paging = F, searching = F),
+                  colnames = c("Environmental Impact", "Use/Emission per Cow", "Reference", "Value", "Unit", "Interpretation"))
+    })
+    
+    output$ei_wateruse <- renderPlotly({
+        wateruse <- CP() %>%
+            ggplot(aes(x = Set, y = Wateruse/water.i, fill = Category)) +
+            geom_bar(stat = "identity", position = "stack") +
+            theme(axis.text = element_text(size=12),
+                  axis.title = element_text(size=12),
+                  plot.title = element_text(size = 12),
+                  panel.background = element_rect(fill = 'ghostwhite', color = 'ghostwhite'),
+                  panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank()) +
+            scale_fill_discrete(name = "Sets") +
+            scale_y_continuous(breaks = pretty_breaks())
+        ggplotly(wateruse)
+    })
+    
+    output$ei_landuse <- renderPlotly({
+        landuse <- CP() %>%
+            ggplot(aes(x = Set, y = Landuse/land.i, fill = Category)) +
+            geom_bar(stat = "identity", position = "stack") +
+            theme(axis.text = element_text(size=12),
+                  axis.title = element_text(size=12),
+                  plot.title = element_text(size = 12),
+                  panel.background = element_rect(fill = 'ghostwhite', color = 'ghostwhite'),
+                  panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank()) +
+            scale_fill_discrete(name = "Sets") +
+            scale_y_continuous(breaks = pretty_breaks())
+        ggplotly(landuse)
+    })
+    
+    output$ei_gase <- renderPlotly(({
+        gase <- CP() %>%
+            ggplot(aes(x = Set, y = CO2e/gase.i, fill = Category)) +
+            geom_bar(stat = "identity", position = "stack") +
+            theme(axis.text = element_text(size=12),
+                  axis.title = element_text(size=12),
+                  plot.title = element_text(size = 12),
+                  panel.background = element_rect(fill = 'ghostwhite', color = 'ghostwhite'),
+                  panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank()) +
+            scale_fill_discrete(name = "Sets") +
+            scale_y_continuous(breaks = pretty_breaks())
+        ggplotly(gase)
+    }))
 })
-
-
-
-
