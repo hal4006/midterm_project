@@ -2,19 +2,21 @@ library(shiny)
 library(shinythemes)
 library(plotly)
 library(shinyWidgets)
+library(DT)
 
 cut_weight <-readxl::read_excel("carcass_calculator_data.xlsx")
 cuts<- cut_weight$cut
 
 
 shinyUI(fluidPage(
-    #set handwriting-style font
+    #set shinytheme as flatly
+  theme = shinytheme("flatly"),
     
-    
-    #set manhanttan background
-    setBackgroundImage(
-        src = "https://picsum.photos/id/430/5302/3534"
-    ),
+    #set background image
+  setBackgroundImage(
+    src = "https://picsum.photos/id/300/4272/2848"
+  ),
+  
     
     #add logo
     #tags$h1 etc. change the size of titles
@@ -24,18 +26,18 @@ shinyUI(fluidPage(
             column(12, img(height = 60, width = 290, src ="black.png"))
         )
     ),
-    
+    # add line here
     hr( color="black"),
     
     fluidRow(
-        column(6,
+        column(6,#allow customers to select the cuts
                selectInput(
                    inputId = "cuts", label = h4("Cuts of Meat:"), width = "100%", 
                    cuts, selected = cuts[2:7], multiple = T
                )),
         column(3,
                
-               numericInput(
+               numericInput(#allow customer to input the cuts
                    inputId = "pounds", label = h4("Pounds of Meat (lbs):"), width = "100%",
                    max = 10000, min = 0, value = 1000, step = 10
                ))
@@ -46,14 +48,14 @@ shinyUI(fluidPage(
                
                #actionButton("all", "Select All")
                #actionButton("clear", "Clear")
-               
+               # change the look of actionButton
                actionBttn(
                    inputId = "all",
                    label = "Select All",
                    style = "material-flat",
                    size = "sm"
                ),
-               
+               # change the look of actionButton 
                actionBttn(
                    inputId = "clear",
                    label = "Clear All",
@@ -63,7 +65,7 @@ shinyUI(fluidPage(
                ) 
                
         ),
-        
+        # add line here
         hr(),
     
  
@@ -84,9 +86,9 @@ shinyUI(fluidPage(
                     sidebarPanel(
                         fluidRow(
                             column(6,
-                                   h4(strong("Purchase A"))),
+                                   h4(strong("Purchase A"))),#highlited 
                             column(6,
-                                   h4(strong("Purchase B")))
+                                   h4(strong("Purchase B")))#highlited 
                             
                         ), hr(),
                         fluidRow(
