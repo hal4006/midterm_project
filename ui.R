@@ -3,11 +3,13 @@ library(shinythemes)
 library(plotly)
 library(shinyWidgets)
 
-cuts <- cut_weight$cut
+cut_weight <-readxl::read_excel("carcass_calculator_data.xlsx")
+cuts<- cut_weight$cut
+
 
 shinyUI(fluidPage(
     #set handwriting-style font
-    chooseSliderSkin("Flat"),
+    
     
     #set manhanttan background
     setBackgroundImage(
@@ -18,8 +20,8 @@ shinyUI(fluidPage(
     #tags$h1 etc. change the size of titles
     titlePanel(
         fluidRow(
-            column(12, h1(strong("Happy  Valley  Meat  Advisor"))), 
-            column(8, img(height = 60, width = 290, src = "black.png")),
+            column(12, h1(strong("To Cull or Conserve?"))), 
+            column(12, img(height = 60, width = 290, src ="black.png"))
         )
     ),
     
@@ -29,7 +31,7 @@ shinyUI(fluidPage(
         column(6,
                selectInput(
                    inputId = "cuts", label = h4("Cuts of Meat:"), width = "100%", 
-                   cuts, selected = cuts[sample(1:36,6)], multiple = T
+                   cuts, selected = cuts[2:7], multiple = T
                )),
         column(3,
                
@@ -50,7 +52,7 @@ shinyUI(fluidPage(
                    label = "Select All",
                    style = "material-flat",
                    size = "sm"
-               ) ,
+               ),
                
                actionBttn(
                    inputId = "clear",
@@ -74,12 +76,19 @@ shinyUI(fluidPage(
                     column(8,plotlyOutput("HVM_bar")),
                     column(4,plotOutput("HVM_wordcloud"))
                 ),
-                dataTableOutput("HVM_table")
+                fluidRow(dataTableOutput("HVM_table"))
             ),
             tabPanel(
                 h4(em("Advisor")),
                 sidebarLayout(
                     sidebarPanel(
+                        fluidRow(
+                            column(6,
+                                   h4(strong("Purchase A"))),
+                            column(6,
+                                   h4(strong("Purchase B")))
+                            
+                        ), hr(),
                         fluidRow(
                             #actionbutton customize         
                             column(6,
@@ -102,7 +111,6 @@ shinyUI(fluidPage(
                                    ))
                         ),
                         
-                        hr(),
                         
                         fluidRow(
                             column(6, sliderInput("qty_A1", "cut_A1", post = "lbs",
@@ -150,18 +158,18 @@ shinyUI(fluidPage(
                                 dataTableOutput("cp_summary"),
                                 br(),
                                 h4("Interpretation of Water Use"),
-                                h5(em("Do you know?")),
-                                p(" - The water use of one cow can cover the annual water use of 58 famlies of three."),
+                                h5(em("Did you know?")),
+                                p(" - The water requirements of a single cow can provide enough water for 58 familes for a whole year!"),
                                 plotlyOutput("ei_wateruse"),
                                 hr(),
                                 h4("Interpretation of Land Use"),
-                                h5(em("Do you know?")),
-                                p(" - The land use of 11 cows can make up a central park."),
+                                h5(em("Did you know?")),
+                                p(" - The land requirements for 11 cows is equivalent to the acreage of Central Park!"),
                                 plotlyOutput("ei_landuse"),
                                 hr(),
                                 h4("Interpretation of Gas Emission"),
-                                h5(em("Do you know?")),
-                                p(" - The CO2 emission of one cow can support a typical vehicle to run 115.7 thousand miles."),
+                                h5(em("Did you know?")),
+                                p(" - The total CO2 emissions for a single cow is equivalent to running a typical vehicle 116,000 miles!"),
                                 plotlyOutput("ei_gase")
                                 
                             ),
@@ -170,11 +178,11 @@ shinyUI(fluidPage(
                                 em("Table"), icon = icon("table", lib = "font-awesome"),
                                 h4("Environmental Impact Interpretations"),
                                 dataTableOutput("ei_summary"), hr(),
-                                h4("Datatable for Set with Same Quantity"),
+                                h4("Datatable for Original Set (same quantity (lbs)) for each cut"),
                                 dataTableOutput("cp0_table"), hr(),
-                                h4("Datatable for Set A"),
+                                h4("Datatable for Purchase A"),
                                 dataTableOutput("cpA_table"), hr(),
-                                h4("Datatable for Set B"),
+                                h4("Datatable for Purchase B"),
                                 dataTableOutput("cpB_table")
                                 
                             )

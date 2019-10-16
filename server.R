@@ -8,10 +8,16 @@ library(plotly)
 library(scales)
 library(wordcloud)
 library(RColorBrewer)
+library(shinythemes)
+library(shinyWidgets)
 
-cut_weight <- read_excel("C:/Users/lhj98/Desktop/DataSci1/Midterm_Project/Datasets/carcass_calculator_data.xlsx")
+#setwd('C:/Users/16462/OneDrive/Documents/Weill Cornell/Data Science I/Midterm/midterm_project-master_101219H/midterm_project-master_101519/HVMC_CullConserve')
+
+#cut_weight <- read_excel("C:/Users/lhj98/Desktop/DataSci1/Midterm_Project/Datasets/carcass_calculator_data.xlsx")
 #cut_weight <-read_excel('C:/Users/16462/OneDrive/Documents/Weill Cornell/Data Science I/Midterm/midterm_project-master_101219H/carcass_calculator_data.xlsx')
 
+cut_weight <-readxl::read_excel("carcass_calculator_data.xlsx")
+cuts<- cut_weight$cut
 
 # Calculation for environmental impact
 water.rate <- 6.355078 #(million gallons)
@@ -112,6 +118,7 @@ shinyServer(function(input, output, clientData, session){
             ggtitle('How Many Cows Are You Killing?') +
             geom_bar(stat = "identity") +
             coord_flip()
+            
         
         ggplotly(bar)
     })
@@ -186,7 +193,7 @@ shinyServer(function(input, output, clientData, session){
         SetB_qty <- c(input$qty_B1,input$qty_B2,input$qty_B3,input$qty_B4,input$qty_B5,input$qty_B6)[1:len]
         SetB <- heads_calculator(Set_cut, SetB_qty)
         
-        Set_all <- as.data.frame(cbind(Set = c(rep("Set with same quantity", len), rep("Set A", len), rep("Set B", len)),
+        Set_all <- as.data.frame(cbind(Purchases = c(rep("Original Set (same quantity (lbs)) for each cut", len), rep("Purchase A", len), rep("Purchase B", len)),
                                        rbind(Set0, SetA, SetB)))
         environment_impact(Set_all, Set_all[,5])
     })
@@ -203,17 +210,17 @@ shinyServer(function(input, output, clientData, session){
                 add_trace(
                     r = CP()[1:Set_Len(),5],
                     theta = SelectedCuts(),
-                    name = "Set with same quantity"
+                    name = "Original Set (same quantity (lbs)) for each cut"
                 ) %>%
                 add_trace(
                     r = CP()[(Set_Len()+1):(2*Set_Len()),5],
                     theta = SelectedCuts(),
-                    name = "Set A"
+                    name = "Purchase A"
                 ) %>%
                 add_trace(
                     r = CP()[(2*Set_Len()+1):(3*Set_Len()),5],
                     theta = SelectedCuts(),
-                    name = "Set B"
+                    name = "Purchase B"
                 ) %>%
                 layout(
                     polar = list(
@@ -226,7 +233,7 @@ shinyServer(function(input, output, clientData, session){
                 )
         } else {
             bar <- CP() %>%
-                ggplot(aes(x = Category, y = Heads, fill = factor(Set, levels = c("Set with same quantity", "Set A", "Set B")))) +
+                ggplot(aes(x = Category, y = Heads, fill = factor(Purchases, levels = c("Original Set (same quantity (lbs)) for each cut", "Purchase A", "Purchase B")))) +
                 geom_bar(stat = "identity", position = "dodge") +
                 theme(axis.text = element_text(size=12),
                       axis.title = element_text(size=12),
@@ -234,7 +241,6 @@ shinyServer(function(input, output, clientData, session){
                       panel.background = element_rect(fill = 'ghostwhite', color = 'ghostwhite'),
                       panel.grid.major = element_blank(),
                       panel.grid.minor = element_blank()) +
-                scale_fill_discrete(name = "Sets") +
                 scale_y_continuous(breaks = pretty_breaks())
             
             ggplotly(bar, tooltip = c("x","y"))
@@ -296,7 +302,7 @@ shinyServer(function(input, output, clientData, session){
     output$cp_summary <- renderDataTable({
         datatable(CP_summary(),
                   colnames = c('Total Quantity (lbs)', 'Total Number of Cows', 'Water Use (milgal)', 'Land Use (acres)', 'CO2 (Klbs)', 'CH4 (Klbs)', 'NO2 (Klbs)'),
-                  rownames = c("Set with same quantity", "Set A", "Set B"),
+                  rownames = c("Datatable for Original Set (same quantity (lbs)) for each cut", "Purchase A", "Purchase B"),
                   options = list(paging = F, searching = F))
     })
     
@@ -319,7 +325,7 @@ shinyServer(function(input, output, clientData, session){
     
     output$ei_wateruse <- renderPlotly({
         wateruse <- CP() %>%
-            ggplot(aes(x = Set, y = Wateruse/water.i, fill = Category)) +
+            ggplot(aes(x = Purchases, y = Wateruse/water.i, fill = Category)) +
             geom_bar(stat = "identity", position = "stack") +
             theme(axis.text = element_text(size=12),
                   axis.title = element_text(size=12),
@@ -327,14 +333,16 @@ shinyServer(function(input, output, clientData, session){
                   panel.background = element_rect(fill = 'ghostwhite', color = 'ghostwhite'),
                   panel.grid.major = element_blank(),
                   panel.grid.minor = element_blank()) +
-            scale_fill_discrete(name = "Sets") +
-            scale_y_continuous(breaks = pretty_breaks())
+            ylab("Number of Families' Annual Water Usage") +
+            ggtitle("Number of Families Your Purchase Can Provide Water For!") +
+            scale_y_continuous(breaks = pretty_breaks())+
+            scale_fill_brewer(palette = "Blues")
         ggplotly(wateruse)
     })
     
     output$ei_landuse <- renderPlotly({
         landuse <- CP() %>%
-            ggplot(aes(x = Set, y = Landuse/land.i, fill = Category)) +
+            ggplot(aes(x = Purchases, y = Landuse/land.i, fill = Category)) +
             geom_bar(stat = "identity", position = "stack") +
             theme(axis.text = element_text(size=12),
                   axis.title = element_text(size=12),
@@ -342,14 +350,16 @@ shinyServer(function(input, output, clientData, session){
                   panel.background = element_rect(fill = 'ghostwhite', color = 'ghostwhite'),
                   panel.grid.major = element_blank(),
                   panel.grid.minor = element_blank()) +
-            scale_fill_discrete(name = "Sets") +
-            scale_y_continuous(breaks = pretty_breaks())
+            ylab("Number of Central Parks") +
+            ggtitle("Number of Central Park Equivalents Your Purchase Requires!") +
+            scale_y_continuous(breaks = pretty_breaks()) +
+            scale_fill_brewer(palette = "Oranges")
         ggplotly(landuse)
     })
     
     output$ei_gase <- renderPlotly(({
         gase <- CP() %>%
-            ggplot(aes(x = Set, y = CO2e/gase.i, fill = Category)) +
+            ggplot(aes(x = Purchases, y = CO2e/gase.i, fill = Category)) +
             geom_bar(stat = "identity", position = "stack") +
             theme(axis.text = element_text(size=12),
                   axis.title = element_text(size=12),
@@ -357,8 +367,14 @@ shinyServer(function(input, output, clientData, session){
                   panel.background = element_rect(fill = 'ghostwhite', color = 'ghostwhite'),
                   panel.grid.major = element_blank(),
                   panel.grid.minor = element_blank()) +
-            scale_fill_discrete(name = "Sets") +
-            scale_y_continuous(breaks = pretty_breaks())
+            ylab("Equivalent Car Miles (k miles)") +
+            ggtitle("Number of Car Miles (k miles) Your Purchase Is Equivalent To!") +
+            scale_y_continuous(breaks = pretty_breaks()) +
+            scale_fill_brewer(palette = "Purples")
         ggplotly(gase)
     }))
 })
+
+
+
+
